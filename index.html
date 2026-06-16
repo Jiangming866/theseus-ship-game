@@ -1034,12 +1034,29 @@ function _ensureAudio(key) {
     const a = new Audio(SOUNDS[key]);
     a.preload = 'auto';
     a.load();
-    a.addEventListener('canplaythrough', () => { _audioReady[key] = true; }, { once: true });
-    a.addEventListener('error', () => { console.warn('[Audio] 加载失败:', key, SOUNDS[key]); });
     _audioCache[key] = a;
     _audioReady[key] = false;
+    // 监听就绪
+    a.addEventListener('canplaythrough', () => { _audioReady[key] = true; }, { once: true });
+    a.addEventListener('error', () => { console.warn('[Audio] 加载失败:', key, SOUNDS[key]); });
+    // 部分浏览器 canplaythrough 可能不触发，加一个 loadeddata 兜底
+    a.addEventListener('loadeddata', () => { if (!_audioReady[key]) _audioReady[key] = true; }, { once: true });
   }
   return _audioCache[key];
+}
+
+// 等待音频就绪（超时10秒兜底）
+function _waitForAudio(key) {
+  return new Promise((resolve) => {
+    const a = _ensureAudio(key);
+    if (_audioReady[key]) return resolve();
+    if (a.readyState >= 3) { _audioReady[key] = true; return resolve(); } // HAVE_FUTURE_DATA 及以上
+    let resolved = false;
+    const onReady = () => { if (!resolved) { resolved = true; resolve(); } };
+    a.addEventListener('canplaythrough', onReady, { once: true });
+    a.addEventListener('loadeddata', onReady, { once: true });
+    setTimeout(() => { if (!resolved) { resolved = true; console.warn('[Audio] 等待超时:', key); resolve(); } }, 10000);
+  });
 }
 
 function playSound(key, volume) {
@@ -1049,19 +1066,21 @@ function playSound(key, volume) {
   a.loop = false;
   a.volume = (volume !== undefined) ? volume : 1.0;
   a.currentTime = 0;
-  const doPlay = (retries) => {
-    a.play().catch((err) => {
-      if (retries > 0) {
-        setTimeout(() => doPlay(retries - 1), 300);
-      } else {
-        console.warn('[Audio] playSound 最终失败:', key, err.name);
-      }
-    });
-  };
-  doPlay(2);
+  _waitForAudio(key).then(() => {
+    const doPlay = (retries) => {
+      a.play().catch((err) => {
+        if (retries > 0) {
+          setTimeout(() => doPlay(retries - 1), 300);
+        } else {
+          console.warn('[Audio] playSound 最终失败:', key, err.name);
+        }
+      });
+    };
+    doPlay(1);
+  });
 }
 
-// 循环背景音（渐入，播放失败自动重试）
+// 循环背景音（渐入，等音频就绪后再播放）
 function playLoop(key, volume, fadeDuration) {
   console.log('playLoop called:', key, volume);
   const src = SOUNDS[key];
@@ -1075,32 +1094,33 @@ function playLoop(key, volume, fadeDuration) {
   a.volume = 0;
   a.currentTime = 0;
 
-  // 播放并处理失败重试
-  const doPlay = (retries) => {
-    a.play().then(() => {
-      // 渐入
-      if (_fadeTimers[key]) { clearInterval(_fadeTimers[key]); }
-      const target = (volume !== undefined) ? volume : 0.5;
-      const fd = (fadeDuration !== undefined) ? fadeDuration : 1250;
-      const steps = fd / 50;
-      const inc = target / steps;
-      let v = 0;
-      const fade = setInterval(() => {
-        v = Math.min(v + inc, target);
-        a.volume = v;
-        if (v >= target) { clearInterval(fade); _fadeTimers[key] = null; }
-      }, 50);
-      _fadeTimers[key] = fade;
-    }).catch((err) => {
-      if (retries > 0) {
-        console.warn('[Audio] play 失败，重试中… (' + key + ') 剩余重试:', retries, err.name);
-        setTimeout(() => doPlay(retries - 1), 500);
-      } else {
-        console.warn('[Audio] play 最终失败:', key, err.name);
-      }
-    });
-  };
-  doPlay(3); // 最多重试3次
+  // 等待音频缓冲就绪后再播放
+  _waitForAudio(key).then(() => {
+    const doPlay = (retries) => {
+      a.play().then(() => {
+        if (_fadeTimers[key]) { clearInterval(_fadeTimers[key]); }
+        const target = (volume !== undefined) ? volume : 0.5;
+        const fd = (fadeDuration !== undefined) ? fadeDuration : 1250;
+        const steps = fd / 50;
+        const inc = target / steps;
+        let v = 0;
+        const fade = setInterval(() => {
+          v = Math.min(v + inc, target);
+          a.volume = v;
+          if (v >= target) { clearInterval(fade); _fadeTimers[key] = null; }
+        }, 50);
+        _fadeTimers[key] = fade;
+      }).catch((err) => {
+        if (retries > 0) {
+          console.warn('[Audio] play 失败，重试中… (' + key + ') 剩余重试:', retries, err.name);
+          setTimeout(() => doPlay(retries - 1), 500);
+        } else {
+          console.warn('[Audio] play 最终失败:', key, err.name);
+        }
+      });
+    };
+    doPlay(2); // 就绪后最多重试2次
+  });
 }
 
 // 停止循环背景音（渐出）
