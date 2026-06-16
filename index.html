@@ -397,6 +397,8 @@ body {
   width: clamp(160px, 17cqw, 280px);
   object-fit: contain;
   margin-bottom: 7cqh;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 /* 按钮组 - 标题下方居中 */
@@ -1101,26 +1103,49 @@ const endingSubtitle = $('#ending-subtitle');
 const titleScreen = $('#title-screen');
 const gameContainer = $('#game');
 
-// 双击标题 Logo 重置所有数据（结局 + 存档）
-const titleLogo = $('#title-logo');
+// 快速点击标题 Logo 3次 → 重置所有数据（结局 + 存档）
 let _resetClicks = 0;
 let _resetTimer = null;
-titleLogo.addEventListener('click', () => {
+
+function _onResetClick(target) {
   _resetClicks++;
+  console.log('[Reset] click #' + _resetClicks, 'target:', target.tagName, target.id);
   if (_resetClicks >= 3) {
     _resetClicks = 0;
     if (_resetTimer) clearTimeout(_resetTimer);
     localStorage.removeItem('theseus_endings');
     localStorage.removeItem('theseus_saves');
-    titleLogo.style.filter = 'brightness(2)';
-    setTimeout(() => { titleLogo.style.filter = ''; }, 300);
+    console.log('[Reset] 数据已清除，即将刷新…');
+    // 视觉反馈
+    if (target.style) target.style.filter = 'brightness(2)';
+    setTimeout(() => { if (target.style) target.style.filter = ''; }, 300);
     setTimeout(() => { location.reload(); }, 500);
     return;
   }
   if (_resetTimer) clearTimeout(_resetTimer);
   _resetTimer = setTimeout(() => { _resetClicks = 0; }, 800);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const titleLogo = document.getElementById('title-logo');
+  if (titleLogo) {
+    titleLogo.addEventListener('click', (e) => { e.stopPropagation(); _onResetClick(e.currentTarget); });
+    titleLogo.title = '快速点击3次可重置所有数据';
+    console.log('[Reset] 监听器已绑定到 #title-logo');
+  } else {
+    console.warn('[Reset] 找不到 #title-logo');
+  }
+  // 备用：也监听标题右侧区域，防止 Logo 点击被拦截
+  const titleRight = document.getElementById('title-right');
+  if (titleRight) {
+    titleRight.addEventListener('click', (e) => {
+      if (e.target.id === 'title-logo' || e.target.closest('#title-logo')) {
+        // 已经在 titleLogo 上处理
+        return;
+      }
+    });
+  }
 });
-titleLogo.title = '快速点击3次可重置所有数据';
 
 const saveMenuBtn = $('#save-menu-btn');
 const memoryBtn = $('#memory-btn');
