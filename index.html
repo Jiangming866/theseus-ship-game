@@ -11,9 +11,10 @@
 } */
 @font-face {
   font-family: 'HuiWenMingChao';
-  src: url('font/汇文明朝体GBK1.001_猫啃网/汇文明朝体GBK1.001/汇文明朝体.otf') format('opentype');
+  src: url('font/HuiWenMingChao-subset.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -1328,15 +1329,10 @@ const CHAR_IMAGES = {
 // 图片预加载
 // ============================================
 
-// 收集所有需要预加载的图片
-const ALL_IMAGES = [
-  // 场景图
-  ...Object.values(SCENE_IMAGES),
-  // 角色立绘
-  ...Object.values(CHAR_IMAGES),
-  // 结局CG
-  ...Object.values(ENDING_CG),
-  // 标题页UI
+// ===== 分级预加载：只先加载标题页必需的图，其余后台静默加载 =====
+
+const PRELOAD_CRITICAL = [
+  // 标题页UI（总共~30KB，秒开）
   'images/title/bg.webp',
   'images/title/btn.webp',
   'images/title/illust.webp',
@@ -1352,33 +1348,42 @@ const ALL_IMAGES = [
   'images/gallery_slot3.webp',
   'images/gallery_slot4.webp',
   'images/gallery_slot5.webp',
-].filter(Boolean);  // 过滤掉 undefined（缺失图片）
+].filter(Boolean);
 
-function preloadAllImages() {
-  const total = ALL_IMAGES.length;
-  let loaded = 0;
+const PRELOAD_BACKGROUND = [
+  ...Object.values(SCENE_IMAGES),
+  ...Object.values(CHAR_IMAGES),
+  ...Object.values(ENDING_CG),
+].filter(Boolean);
+
+// 先从关键图开始
+function preloadCritical() {
   const bar = document.getElementById('loading-bar-fill');
   const text = document.getElementById('loading-text');
-  const screen = document.getElementById('loading-screen');
+  const total = PRELOAD_CRITICAL.length;
+  let loaded = 0;
 
-  if (total === 0) {
-    finishLoading();
-    return;
-  }
+  if (total === 0) { finishLoading(); return; }
 
-  text.textContent = `正在加载 0 / ${total}`;
+  text.textContent = '正在准备…';
   
-  ALL_IMAGES.forEach(src => {
+  PRELOAD_CRITICAL.forEach(src => {
     const img = new Image();
     img.onload = img.onerror = () => {
       loaded++;
-      const pct = Math.round((loaded / total) * 100);
-      bar.style.width = pct + '%';
-      text.textContent = `正在加载 ${loaded} / ${total}`;
+      bar.style.width = Math.round((loaded / total) * 100) + '%';
       if (loaded >= total) {
-        setTimeout(finishLoading, 300); // 稍微延迟让用户看到100%
+        setTimeout(finishLoading, 200);
       }
     };
+    img.src = src;
+  });
+}
+
+function preloadBackground() {
+  // 后台静默加载场景、角色、CG
+  PRELOAD_BACKGROUND.forEach(src => {
+    const img = new Image();
     img.src = src;
   });
 }
@@ -1386,18 +1391,16 @@ function preloadAllImages() {
 function finishLoading() {
   const screen = document.getElementById('loading-screen');
   const text = document.getElementById('loading-text');
-  text.textContent = '加载完成';
+  text.textContent = '准备就绪';
   screen.classList.add('done');
-  // 加载完成后显示标题页
   setTimeout(() => {
     if (screen.parentNode) screen.style.display = 'none';
-  }, 800);
+    // 标题页出现后立即后台加载其余资源
+    preloadBackground();
+  }, 600);
 }
 
-// 页面加载时自动开始预加载
-window.addEventListener('DOMContentLoaded', () => {
-  preloadAllImages();
-});
+window.addEventListener('DOMContentLoaded', preloadCritical);
 
 // ============================================
 // 场景数据
