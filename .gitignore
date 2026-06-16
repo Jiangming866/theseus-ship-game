@@ -1,0 +1,19 @@
+# Dev files
+.codebuddy/
+*.md
+!README.md
+
+# Font installers
+HelloFont.exe
+HelloFont.win.*
+
+# Temp
+*.zip
+font/*_temp/
+
+# PPT (locked by Office)
+ppt/
+
+# OS files
+Thumbs.db
+.DS_Store
