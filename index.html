@@ -116,7 +116,7 @@ body {
   left: auto; right: 0;
   width: 65%; height: 85%;
   background-position: right bottom;
-  background-image: url('images/char_daughter.png');
+  background-image: url('images/char_daughter.webp');
 }
 
 /* 兔子立绘 - 缩小上移 */
@@ -365,7 +365,7 @@ body {
 #title-page {
   position: relative;
   width: 92cqw; height: 84cqh;
-  background: url('images/title/bg.png') center/100% 100% no-repeat #fff;
+  background: url('images/title/bg.webp') center/100% 100% no-repeat #fff;
   border-radius: 12px;
   display: flex;
   overflow: hidden;
@@ -407,7 +407,7 @@ body {
 .title-btn {
   width: clamp(180px, 18cqw, 300px);
   aspect-ratio: 3.5 / 1;
-  background: url('images/title/btn.png') center/100% 100% no-repeat;
+  background: url('images/title/btn.webp') center/100% 100% no-repeat;
   border: none;
   cursor: pointer;
   font-family: inherit;
@@ -433,6 +433,44 @@ body {
 @media (max-width: 600px) {
   #dialogue-box { padding: 4cqh 5cqw 7cqh; }
   .choice-btn { padding: 12px 32px; min-width: 220px; }
+}
+
+/* ===== 加载界面 ===== */
+#loading-screen {
+  position: absolute; inset: 0; z-index: 60;
+  background: #0a0806;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.8s ease;
+}
+#loading-screen.done { opacity: 0; pointer-events: none; }
+#loading-inner {
+  text-align: center;
+}
+#loading-title {
+  font-family: 'HuiWenMingChao', serif;
+  font-size: clamp(20px, 3cqw, 32px);
+  letter-spacing: 0.3em;
+  color: #c8a882;
+  margin-bottom: 2.5cqh;
+}
+#loading-bar-track {
+  width: clamp(200px, 30cqw, 360px);
+  height: 2px;
+  background: rgba(200,160,120,0.2);
+  margin: 0 auto 1.5cqh;
+  border-radius: 1px;
+  overflow: hidden;
+}
+#loading-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #c8a882, #e0c8a0);
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+#loading-text {
+  font-size: 12px;
+  color: rgba(180,150,120,0.5);
+  letter-spacing: 0.1em;
 }
 </style>
 
@@ -533,7 +571,7 @@ body {
   content: '';
   position: absolute;
   width: 88cqw; height: 82cqh;
-  background: url('images/title/panel_bg.png') center/100% 100% no-repeat #fff;
+  background: url('images/title/panel_bg.webp') center/100% 100% no-repeat #fff;
   border-radius: 12px;
   z-index: -1;
 }
@@ -577,12 +615,12 @@ body {
 .save-slot:nth-child(1),
 .save-slot:nth-child(3) {
   height: 260px;
-  background: url('images/title/slot_bg.png') center/100% 100% no-repeat;
+  background: url('images/title/slot_bg.webp') center/100% 100% no-repeat;
 }
 /* 中间：方形 */
 .save-slot:nth-child(2) {
   height: 260px;
-  background: url('images/title/slot_bg.png') center/100% 100% no-repeat;
+  background: url('images/title/slot_bg.webp') center/100% 100% no-repeat;
 }
 .save-slot:hover { filter: brightness(1.04); }
 .save-slot.empty { opacity: 0.5; }
@@ -592,7 +630,7 @@ body {
 .slot-actions { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
 .slot-btn {
   flex: 1; padding: 10px 14px;
-  background: url('images/title/slot_btn.png') center/100% 100% no-repeat;
+  background: url('images/title/slot_btn.webp') center/100% 100% no-repeat;
   border: none; color: rgba(60,50,40,0.7);
   font-family: inherit; font-size: 13px; cursor: pointer;
   letter-spacing: 0.05em; transition: all 0.2s ease; border-radius: 4px;
@@ -604,7 +642,7 @@ body {
   margin-top: 5vh;
 }
 #panel-close, #panel-title {
-  background: url('images/title/panel_btn.png') center/100% 100% no-repeat;
+  background: url('images/title/panel_btn.webp') center/100% 100% no-repeat;
   border: none; color: #555; font-weight: 500;
   font-family: inherit; font-size: 15px; padding: 12px 40px; min-width: 130px;
   cursor: pointer; letter-spacing: 0.1em; transition: all 0.3s ease;
@@ -626,7 +664,7 @@ body {
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   width: 88cqw; height: 82cqh;
-  background: url('images/gallery_bg.png') center/100% 100% no-repeat #fff;
+  background: url('images/gallery_bg.webp') center/100% 100% no-repeat #fff;
   border-radius: 12px;
 }
 #gallery-title {
@@ -704,19 +742,19 @@ body {
 .gallery-slot.unlocked .slot-status { color: rgba(60,80,60,0.8); }
 
 /* 左上 = 结局1（轻信） - 底两角圆角 */
-#gallery-slot1 { left: 16cqw; top: 8cqh; background-image: url('images/gallery_slot1.png'); border-radius: 0 0 20px 20px; }
+#gallery-slot1 { left: 16cqw; top: 8cqh; background-image: url('images/gallery_slot1.webp'); border-radius: 0 0 20px 20px; }
 /* 右上 = 结局（真相·真结局） - 底两角圆角 */
-#gallery-slot2 { right: 16cqw; top: 8cqh; background-image: url('images/gallery_slot2.png'); border-radius: 0 0 20px 20px; }
+#gallery-slot2 { right: 16cqw; top: 8cqh; background-image: url('images/gallery_slot2.webp'); border-radius: 0 0 20px 20px; }
 /* 左下 = 结局3（谎言） - 贴底图底边 */
-#gallery-slot3 { left: 16cqw; bottom: 8cqh; background-image: url('images/gallery_slot3.png'); border-radius: 20px 20px 0 0; }
+#gallery-slot3 { left: 16cqw; bottom: 8cqh; background-image: url('images/gallery_slot3.webp'); border-radius: 20px 20px 0 0; }
 /* 右下 = 结局4（离开） - 顶两角圆角 */
-#gallery-slot4 { right: 16cqw; bottom: 8cqh; background-image: url('images/gallery_slot4.png'); border-radius: 20px 20px 0 0; }
+#gallery-slot4 { right: 16cqw; bottom: 8cqh; background-image: url('images/gallery_slot4.webp'); border-radius: 20px 20px 0 0; }
 /* 中间 = 结局（虚假幸福） */
 #gallery-slot5 {
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
   width: 15cqw; max-width: 210px;
-  background-image: url('images/gallery_slot5.png');
+  background-image: url('images/gallery_slot5.webp');
   border-radius: 20px;
 }
 #gallery-slot5:hover { transform: translate(-50%, calc(-50% - 4px)) !important; filter: brightness(1.05); }
@@ -839,10 +877,10 @@ body {
 <div id="title-screen">
   <div id="title-page">
     <div id="title-left">
-      <img id="title-illust" src="images/title/illust.png" alt="">
+      <img id="title-illust" src="images/title/illust.webp" alt="">
     </div>
     <div id="title-right">
-      <img id="title-logo" src="images/title/title.png" alt="忒修斯之船">
+      <img id="title-logo" src="images/title/title.webp" alt="忒修斯之船">
       <div id="title-buttons">
         <button class="title-btn" onclick="startFromTitle()"><span>开始游戏</span></button>
         <button class="title-btn" onclick="continueFromTitle()"><span>继续游戏</span></button>
@@ -904,6 +942,18 @@ body {
 </div>
 
 <div id="game" style="display:none">
+
+<!-- 加载界面 -->
+<div id="loading-screen">
+  <div id="loading-inner">
+    <div id="loading-title">忒修斯之船</div>
+    <div id="loading-bar-track">
+      <div id="loading-bar-fill"></div>
+    </div>
+    <div id="loading-text">正在准备…</div>
+  </div>
+</div>
+
   <div id="bg-layer" class="dark"></div>
   <div id="scene-img"></div>
   <div id="char-layer" class="hidden"></div>
@@ -1228,30 +1278,30 @@ function closeMemory(e) {
 
 // 场景图映射 - 替换为实际图片路径
 const SCENE_IMAGES = {
-  campfire: 'images/campfire.png',
-  campfireBg: 'images/campfire_bg.png',
-  morning: 'images/morning_forest.png',
-  morning2: 'images/morning_forest2.png',
-  forest: 'images/deep_forest.png',
-  cabin: 'images/cabin.png',
-  cabinExt: 'images/cabin_exterior.png',
-  cabinInside: 'images/cabin_inside.png',
-  cave: 'images/cave.png',
-  fog: 'images/fog.png',
-  forestEscape: 'images/forest_escape.png',
-  brokenTree: 'images/broken_tree.png',
-  nightmare: 'images/nightmare.png',
-  accident: 'images/accident.png',
-  oeEnding: 'images/ending_oe.png',
+  campfire: 'images/campfire.webp',
+  campfireBg: 'images/campfire_bg.webp',
+  morning: 'images/morning_forest.webp',
+  morning2: 'images/morning_forest2.webp',
+  forest: 'images/deep_forest.webp',
+  cabin: 'images/cabin.webp',
+  cabinExt: 'images/cabin_exterior.webp',
+  cabinInside: 'images/cabin_inside.webp',
+  cave: 'images/cave.webp',
+  fog: 'images/fog.webp',
+  forestEscape: 'images/forest_escape.webp',
+  brokenTree: 'images/broken_tree.webp',
+  nightmare: 'images/nightmare.webp',
+  accident: 'images/accident.webp',
+  oeEnding: 'images/ending_oe.webp',
 };
 
 // 结局CG图鉴映射（结局图鉴中点击已解锁结局展示的CG）
 const ENDING_CG = {
-  bad1: 'images/ending_bad1.png',  // 轻信 - 已出
-  bad2: 'images/ending_bad2.png',  // 虚假幸福 - 已出
-  end3: 'images/ending_end3.png',  // 谎言 - 已出
-  oe:   'images/ending_oe.png',  // 离开 - 已出
-  true: 'images/ending_true.png',  // 真相 - 已出
+  bad1: 'images/ending_bad1.webp',  // 轻信 - 已出
+  bad2: 'images/ending_bad2.webp',  // 虚假幸福 - 已出
+  end3: 'images/ending_end3.webp',  // 谎言 - 已出
+  oe:   'images/ending_oe.webp',  // 离开 - 已出
+  true: 'images/ending_true.webp',  // 真相 - 已出
 };
 
 // 结局CG标题副标题（弹窗里显示）
@@ -1265,14 +1315,89 @@ const ENDING_INFO = {
 
 // 角色立绘映射
 const CHAR_IMAGES = {
-  mumu:        'images/char_mumu.png',
-  oldman:      'images/char_oldman.png',
-  rabbit:      'images/char_rabbit.png',
-  mother:      'images/char_mother.png',
-  motherCold:  'images/char_mother_cold.png',
-  father:      'images/char_father.png',
-  daughter:    'images/char_daughter.png',
+  mumu:        'images/char_mumu.webp',
+  oldman:      'images/char_oldman.webp',
+  rabbit:      'images/char_rabbit.webp',
+  mother:      'images/char_mother.webp',
+  motherCold:  'images/char_mother_cold.webp',
+  father:      'images/char_father.webp',
+  daughter:    'images/char_daughter.webp',
 };
+
+// ============================================
+// 图片预加载
+// ============================================
+
+// 收集所有需要预加载的图片
+const ALL_IMAGES = [
+  // 场景图
+  ...Object.values(SCENE_IMAGES),
+  // 角色立绘
+  ...Object.values(CHAR_IMAGES),
+  // 结局CG
+  ...Object.values(ENDING_CG),
+  // 标题页UI
+  'images/title/bg.webp',
+  'images/title/btn.webp',
+  'images/title/illust.webp',
+  'images/title/title.webp',
+  'images/title/panel_bg.webp',
+  'images/title/panel_btn.webp',
+  'images/title/slot_bg.webp',
+  'images/title/slot_btn.webp',
+  // 图鉴UI
+  'images/gallery_bg.webp',
+  'images/gallery_slot1.webp',
+  'images/gallery_slot2.webp',
+  'images/gallery_slot3.webp',
+  'images/gallery_slot4.webp',
+  'images/gallery_slot5.webp',
+].filter(Boolean);  // 过滤掉 undefined（缺失图片）
+
+function preloadAllImages() {
+  const total = ALL_IMAGES.length;
+  let loaded = 0;
+  const bar = document.getElementById('loading-bar-fill');
+  const text = document.getElementById('loading-text');
+  const screen = document.getElementById('loading-screen');
+
+  if (total === 0) {
+    finishLoading();
+    return;
+  }
+
+  text.textContent = `正在加载 0 / ${total}`;
+  
+  ALL_IMAGES.forEach(src => {
+    const img = new Image();
+    img.onload = img.onerror = () => {
+      loaded++;
+      const pct = Math.round((loaded / total) * 100);
+      bar.style.width = pct + '%';
+      text.textContent = `正在加载 ${loaded} / ${total}`;
+      if (loaded >= total) {
+        setTimeout(finishLoading, 300); // 稍微延迟让用户看到100%
+      }
+    };
+    img.src = src;
+  });
+}
+
+function finishLoading() {
+  const screen = document.getElementById('loading-screen');
+  const text = document.getElementById('loading-text');
+  text.textContent = '加载完成';
+  screen.classList.add('done');
+  // 加载完成后显示标题页
+  setTimeout(() => {
+    if (screen.parentNode) screen.style.display = 'none';
+  }, 800);
+}
+
+// 页面加载时自动开始预加载
+window.addEventListener('DOMContentLoaded', () => {
+  preloadAllImages();
+});
 
 // ============================================
 // 场景数据
