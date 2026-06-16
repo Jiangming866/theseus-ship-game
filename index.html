@@ -1143,7 +1143,7 @@ function _onResetClick(target) {
     _resetClicks = 0;
     if (_resetTimer) clearTimeout(_resetTimer);
     localStorage.removeItem('theseus_endings');
-    localStorage.removeItem('theseus_saves');
+    localStorage.removeItem('theseus_ship_saves');
     console.log('[Reset] 数据已清除，即将刷新…');
     // 视觉反馈
     if (target.style) target.style.filter = 'brightness(2)';
