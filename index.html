@@ -1240,6 +1240,7 @@ function loadGame(slotIndex) {
   closeSavePanel();
   // 如果游戏未启动（从标题页读取），先进入游戏
   if (gameContainer.style.display === 'none') {
+    stopLoop('musicbox'); stopLoop('musicbox_full'); // 停止标题页音乐
     Object.keys(SOUNDS).forEach(k => _ensureAudio(k));
     enterGame();
   }
