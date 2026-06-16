@@ -1026,12 +1026,18 @@ const SOUNDS = {
 
 const _audioCache = {};
 const _fadeTimers = {};  // 跟踪渐入/渐出定时器，防止互相打架
+const _audioReady = {};  // 跟踪音频是否已缓冲完毕
 
 // 预创建所有音频对象（静音状态，避免自动播放限制）
 function _ensureAudio(key) {
   if (!_audioCache[key]) {
-    _audioCache[key] = new Audio(SOUNDS[key]);
-    _audioCache[key].preload = 'auto';
+    const a = new Audio(SOUNDS[key]);
+    a.preload = 'auto';
+    a.load();
+    a.addEventListener('canplaythrough', () => { _audioReady[key] = true; }, { once: true });
+    a.addEventListener('error', () => { console.warn('[Audio] 加载失败:', key, SOUNDS[key]); });
+    _audioCache[key] = a;
+    _audioReady[key] = false;
   }
   return _audioCache[key];
 }
@@ -1043,12 +1049,21 @@ function playSound(key, volume) {
   a.loop = false;
   a.volume = (volume !== undefined) ? volume : 1.0;
   a.currentTime = 0;
-  a.play().catch(() => {});
+  const doPlay = (retries) => {
+    a.play().catch((err) => {
+      if (retries > 0) {
+        setTimeout(() => doPlay(retries - 1), 300);
+      } else {
+        console.warn('[Audio] playSound 最终失败:', key, err.name);
+      }
+    });
+  };
+  doPlay(2);
 }
 
-// 循环背景音（渐入）
+// 循环背景音（渐入，播放失败自动重试）
 function playLoop(key, volume, fadeDuration) {
-  console.log('playLoop called:', key, volume, new Error().stack.split('\n').slice(0,5).join('\n'));
+  console.log('playLoop called:', key, volume);
   const src = SOUNDS[key];
   if (!src) return;
   const a = _ensureAudio(key);
@@ -1056,22 +1071,36 @@ function playLoop(key, volume, fadeDuration) {
   // 如果已在播放且音量接近目标，不重置（避免场景切换时断续）
   const targetVol = (volume !== undefined) ? volume : 0.5;
   if (!a.paused && Math.abs(a.volume - targetVol) < 0.05) return;
+
   a.volume = 0;
   a.currentTime = 0;
-  a.play().catch(() => {});
-  // 渐入（先清理旧定时器防止打架）
-  if (_fadeTimers[key]) { clearInterval(_fadeTimers[key]); }
-  const target = (volume !== undefined) ? volume : 0.5;
-  const fd = (fadeDuration !== undefined) ? fadeDuration : 1250; // 默认1.25秒
-  const steps = fd / 50;
-  const inc = target / steps;
-  let v = 0;
-  const fade = setInterval(() => {
-    v = Math.min(v + inc, target);
-    a.volume = v;
-    if (v >= target) { clearInterval(fade); _fadeTimers[key] = null; }
-  }, 50);
-  _fadeTimers[key] = fade;
+
+  // 播放并处理失败重试
+  const doPlay = (retries) => {
+    a.play().then(() => {
+      // 渐入
+      if (_fadeTimers[key]) { clearInterval(_fadeTimers[key]); }
+      const target = (volume !== undefined) ? volume : 0.5;
+      const fd = (fadeDuration !== undefined) ? fadeDuration : 1250;
+      const steps = fd / 50;
+      const inc = target / steps;
+      let v = 0;
+      const fade = setInterval(() => {
+        v = Math.min(v + inc, target);
+        a.volume = v;
+        if (v >= target) { clearInterval(fade); _fadeTimers[key] = null; }
+      }, 50);
+      _fadeTimers[key] = fade;
+    }).catch((err) => {
+      if (retries > 0) {
+        console.warn('[Audio] play 失败，重试中… (' + key + ') 剩余重试:', retries, err.name);
+        setTimeout(() => doPlay(retries - 1), 500);
+      } else {
+        console.warn('[Audio] play 最终失败:', key, err.name);
+      }
+    });
+  };
+  doPlay(3); // 最多重试3次
 }
 
 // 停止循环背景音（渐出）
@@ -1432,6 +1461,17 @@ function preloadBackground() {
     const img = new Image();
     img.src = src;
   });
+  // 预加载关键音频（标题音乐 + 常见场景音效）
+  preloadAudio();
+}
+
+// 预加载关键音频文件，减少播放时的缓冲延迟
+function preloadAudio() {
+  const criticalAudio = ['musicbox', 'musicbox_full', 'rain', 'sadBgm', 'birds', 'campfire'];
+  criticalAudio.forEach(key => {
+    if (SOUNDS[key]) _ensureAudio(key);
+  });
+  console.log('[Audio] 关键音频预加载已触发');
 }
 
 function finishLoading() {
