@@ -1101,6 +1101,27 @@ const endingSubtitle = $('#ending-subtitle');
 const titleScreen = $('#title-screen');
 const gameContainer = $('#game');
 
+// 双击标题 Logo 重置所有数据（结局 + 存档）
+const titleLogo = $('#title-logo');
+let _resetClicks = 0;
+let _resetTimer = null;
+titleLogo.addEventListener('click', () => {
+  _resetClicks++;
+  if (_resetClicks >= 3) {
+    _resetClicks = 0;
+    if (_resetTimer) clearTimeout(_resetTimer);
+    localStorage.removeItem('theseus_endings');
+    localStorage.removeItem('theseus_saves');
+    titleLogo.style.filter = 'brightness(2)';
+    setTimeout(() => { titleLogo.style.filter = ''; }, 300);
+    setTimeout(() => { location.reload(); }, 500);
+    return;
+  }
+  if (_resetTimer) clearTimeout(_resetTimer);
+  _resetTimer = setTimeout(() => { _resetClicks = 0; }, 800);
+});
+titleLogo.title = '快速点击3次可重置所有数据';
+
 const saveMenuBtn = $('#save-menu-btn');
 const memoryBtn = $('#memory-btn');
 const savePanel = $('#save-panel');
